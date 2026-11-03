@@ -43,7 +43,8 @@ public class EventService {
 
     public void update(Long userId, Long eventId, EventUpdateDTO dto) {
         Event event = eventMapper.selectById(eventId);
-        if (event == null || !event.getUserId().equals(userId)) {
+        List<Long> userIds = userService.getCoupleUserIds(userId);
+        if (event == null || !userIds.contains(event.getUserId())) {
             throw new BusinessException("事件不存在");
         }
         if (dto.getName() != null) event.setName(dto.getName());
@@ -61,7 +62,8 @@ public class EventService {
 
     public void delete(Long userId, Long eventId) {
         Event event = eventMapper.selectById(eventId);
-        if (event == null || !event.getUserId().equals(userId)) {
+        List<Long> userIds = userService.getCoupleUserIds(userId);
+        if (event == null || !userIds.contains(event.getUserId())) {
             throw new BusinessException("事件不存在");
         }
         eventPhotoService.deleteByEventId(eventId);
