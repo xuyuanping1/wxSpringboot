@@ -28,15 +28,29 @@ public class UserController {
     }
 
     @PostMapping("/wx-login")
-    public Result<User> wxLogin(@RequestBody WxLoginDTO dto) {
+    public Result<User> wxLogin(@RequestHeader(value = "x-wx-openid", required = false) String wxOpenid,
+                                @RequestBody WxLoginDTO dto) {
+        if (wxOpenid != null && !wxOpenid.trim().isEmpty()) {
+            User user = userService.wxLoginWithOpenid(wxOpenid, dto.getNickname(), dto.getAvatarUrl());
+            return Result.success(user);
+        }
         User user = userService.wxLogin(dto);
         return Result.success(user);
     }
 
     @PostMapping("/silent-wx-login")
-    public Result<User> silentWxLogin(@RequestBody Map<String, String> body) {
-        User user = userService.silentWxLogin(body.get("code"));
-        return Result.success(user);
+    public Result<User> silentWxLogin(@RequestHeader(value = "x-wx-openid", required = false) String wxOpenid,
+                                      @RequestBody(required = false) Map<String, String> body) {
+        if (wxOpenid != null && !wxOpenid.trim().isEmpty()) {
+            User user = userService.silentWxLoginByOpenid(wxOpenid);
+            return Result.success(user);
+        }
+        String code = body != null ? body.get("code") : null;
+        if (code != null && !code.trim().isEmpty()) {
+            User user = userService.silentWxLogin(code);
+            return Result.success(user);
+        }
+        return Result.error("缺少 openid 或 code");
     }
 
     @GetMapping("/info")

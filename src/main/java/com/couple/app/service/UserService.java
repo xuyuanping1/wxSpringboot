@@ -83,6 +83,13 @@ public class UserService {
      */
     public User silentWxLogin(String code) {
         String openid = codeToOpenid(code);
+        return silentWxLoginByOpenid(openid);
+    }
+
+    public User silentWxLoginByOpenid(String openid) {
+        if (openid == null || openid.trim().isEmpty()) {
+            return null;
+        }
         return userMapper.selectOne(
                 new LambdaQueryWrapper<User>().eq(User::getOpenid, openid)
         );
@@ -90,22 +97,29 @@ public class UserService {
 
     public User wxLogin(WxLoginDTO dto) {
         String openid = codeToOpenid(dto.getCode());
+        return wxLoginWithOpenid(openid, dto.getNickname(), dto.getAvatarUrl());
+    }
+
+    public User wxLoginWithOpenid(String openid, String nickname, String avatarUrl) {
+        if (openid == null || openid.trim().isEmpty()) {
+            throw new BusinessException("微信登录失败: openid 为空");
+        }
         User user = userMapper.selectOne(
                 new LambdaQueryWrapper<User>().eq(User::getOpenid, openid)
         );
         if (user == null) {
             user = new User();
             user.setOpenid(openid);
-            user.setNickname(dto.getNickname() != null ? dto.getNickname() : "");
-            user.setAvatarUrl(dto.getAvatarUrl() != null ? dto.getAvatarUrl() : "");
+            user.setNickname(nickname != null ? nickname : "");
+            user.setAvatarUrl(avatarUrl != null ? avatarUrl : "");
             userMapper.insert(user);
         } else {
             // 更新昵称和头像
-            if (dto.getNickname() != null && !dto.getNickname().isEmpty()) {
-                user.setNickname(dto.getNickname());
+            if (nickname != null && !nickname.isEmpty()) {
+                user.setNickname(nickname);
             }
-            if (dto.getAvatarUrl() != null && !dto.getAvatarUrl().isEmpty()) {
-                user.setAvatarUrl(dto.getAvatarUrl());
+            if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                user.setAvatarUrl(avatarUrl);
             }
             userMapper.updateById(user);
         }
