@@ -64,7 +64,13 @@ public class UserController {
         if (user.getPartnerId() == null) {
             return Result.success(null);
         }
-        return Result.success(userService.getUserInfo(user.getPartnerId()));
+        User partner = userService.getUserInfo(user.getPartnerId());
+        if (partner != null) {
+            partner.setOpenid(null);
+            partner.setUnionid(null);
+            partner.setPhone(null);
+        }
+        return Result.success(partner);
     }
 
     @PutMapping("/info")

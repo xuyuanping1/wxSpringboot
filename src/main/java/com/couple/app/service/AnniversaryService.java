@@ -21,7 +21,10 @@ public class AnniversaryService {
     public Anniversary getAnniversary(Long userId) {
         java.util.List<Long> userIds = userService.getCoupleUserIds(userId);
         Anniversary anniversary = anniversaryMapper.selectOne(
-                new LambdaQueryWrapper<Anniversary>().in(Anniversary::getUserId, userIds).last("LIMIT 1")
+                new LambdaQueryWrapper<Anniversary>()
+                        .in(Anniversary::getUserId, userIds)
+                        .orderByDesc(Anniversary::getUpdatedAt)
+                        .last("LIMIT 1")
         );
         if (anniversary == null) {
             throw new BusinessException("尚未设置纪念日");
@@ -32,7 +35,10 @@ public class AnniversaryService {
     public Anniversary createIfAbsent(Long userId, LocalDate startDate) {
         java.util.List<Long> userIds = userService.getCoupleUserIds(userId);
         Anniversary anniversary = anniversaryMapper.selectOne(
-                new LambdaQueryWrapper<Anniversary>().in(Anniversary::getUserId, userIds).last("LIMIT 1")
+                new LambdaQueryWrapper<Anniversary>()
+                        .in(Anniversary::getUserId, userIds)
+                        .orderByDesc(Anniversary::getUpdatedAt)
+                        .last("LIMIT 1")
         );
         if (anniversary == null) {
             anniversary = new Anniversary();
